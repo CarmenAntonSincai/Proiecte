@@ -1,0 +1,89 @@
+{
+  "proiect": {
+    "titlu": "Atelier de aplicații cu AI",
+    "descriere": "Construim, pas cu pas, o aplicație web educativă pentru elevii mai mici, lucrând împreună cu un asistent AI: noi gândim, testăm și înțelegem codul, AI-ul ne ajută să mergem mai repede. La final, fiecare aplicație este publicată pe GitHub Pages și apare mai jos."
+  },
+  "etape": [
+    {
+      "fisa": "Fișa de lucru 1",
+      "titlu": "Ideea aplicației și primul prompt",
+      "descriere": "Alegi tema aplicației tale: un quiz educativ pentru elevii mai mici, pe un subiect pe care îl stăpânești bine (matematică, științe, geografie, limbi străine). Stabilești pentru ce clasă este aplicația și ce trebuie să învețe cei care o folosesc. Scrii primul prompt către AI ca să-ți organizezi ideile și analizezi critic răspunsul: ce păstrezi, ce schimbi și de ce. Pornești jurnalul AI, în care vei nota la fiecare oră ce ai cerut, ce ai primit și ce ai folosit.",
+      "fisiere": [
+        "Fișa de lucru 1 — completată: tema, publicul și ideile pentru întrebări"
+      ],
+      "continut": [
+        "Tema aplicației și clasa căreia i se adresează",
+        "Primul prompt trimis, cu răspunsul analizat",
+        "Prima intrare în jurnalul AI"
+      ]
+    },
+    {
+      "fisa": "Fișa de lucru 2",
+      "titlu": "Structura paginii (HTML)",
+      "descriere": "Creezi folderul proiectului și fișierul index.html, apoi construiești scheletul aplicației: titlul, o scurtă prezentare, butonul START, zona în care apare scorul și zona în care vor apărea întrebările. Folosești AI-ul ca să înțelegi etichetele HTML, nu ca să copiezi o pagină gata făcută: fiecare element din cod trebuie să-l poți explica.",
+      "fisiere": [
+        "index.html — structura paginii, cu <meta charset=\"utf-8\"> ca diacriticele să apară corect",
+        "Fișa de lucru 2 — completată"
+      ],
+      "continut": [
+        "Elementele cu id-urile start (butonul), scor și continut",
+        "Al doilea prompt trimis, cu răspunsul analizat",
+        "Intrarea din jurnalul AI"
+      ]
+    },
+    {
+      "fisa": "Fișa de lucru 3",
+      "titlu": "Aspectul paginii (CSS)",
+      "descriere": "Creezi fișierul style.css și îl legi de index.html. Alegi o culoare principală, un font ușor de citit pentru copii și o spațiere aerisită, apoi stilizezi titlul, butonul START și zona de scor. Ceri AI-ului mai multe variante de design și o alegi pe cea potrivită publicului tău, cu argumente.",
+      "fisiere": [
+        "style.css — stilurile aplicației: culori, fonturi, butoane, spațiere",
+        "index.html — actualizat cu <link rel=\"stylesheet\" href=\"style.css\">",
+        "Fișa de lucru 3 — completată"
+      ],
+      "continut": [
+        "Culoarea principală și fontul alese, cu motivul alegerii",
+        "Al treilea prompt trimis, cu răspunsul analizat",
+        "Intrarea din jurnalul AI"
+      ]
+    },
+    {
+      "fisa": "Fișa de lucru 4",
+      "titlu": "Prima funcționalitate (JavaScript)",
+      "descriere": "Faci pagina interactivă: butonul START pornește jocul, întrebarea apare cu 3 variante de răspuns, iar scorul și mesajul de feedback se schimbă după fiecare răspuns. Testezi aplicația, găsești un bug, îl descrii singur și îl corectezi apoi împreună cu AI-ul. La final, adaugi restul întrebărilor și obții quizul complet.",
+      "fisiere": [
+        "script.js — logica quizului: întrebările, verificarea răspunsurilor, scorul și mesajele",
+        "index.html — actualizat cu <script src=\"script.js\"> și zonele intrebare, raspunsuri, mesaj",
+        "style.css — actualizat cu stilul butoanelor de răspuns",
+        "Fișa de lucru 4 — completată: explicațiile codului, testele și tabelul de debugging"
+      ],
+      "continut": [
+        "Quizul complet: toate întrebările afișate pe rând, cu scorul final",
+        "Bugul din testul 3 găsit, explicat și corectat",
+        "Prompturile 4 și 5 trimise, cu răspunsurile analizate",
+        "Intrarea din jurnalul AI"
+      ]
+    },
+    {
+      "fisa": "Publicare",
+      "titlu": "Aplicația pe GitHub Pages",
+      "descriere": "Pui aplicația pe internet, ca oricine să o poată folosi. Îți faci cont pe GitHub sau te conectezi cu contul primit de la școală. Creezi un repository public, încarci fișierele proiectului, activezi GitHub Pages și verifici că aplicația funcționează la adresa publică, inclusiv de pe telefon. Apoi trimiți linkul, ca aplicația ta să apară în galeria clasei.",
+      "fisiere": [
+        "index.html, style.css, script.js — versiunile finale, încărcate direct în rădăcina repository-ului"
+      ],
+      "continut": [
+        "Cont GitHub activ, cu adresa de e-mail confirmată",
+        "Linkul paginii publicate (…github.io), deschis și testat",
+        "Linkul repository-ului",
+        "Mesajul cu linkurile, trimis profesorului din formularul de mai jos"
+      ]
+    }
+  ],
+  "clase": [
+    {
+      "id": "11c",
+      "nume": "11C",
+      "an": "2026–2027",
+      "elevi": []
+    }
+  ]
+}

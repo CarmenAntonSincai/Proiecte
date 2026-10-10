@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Atelier de aplicații cu AI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style id="page-css">
+/* Layout: o coloană de lucru — antet cu clasele, traseul pe etape (stepper), galeria aplicațiilor, ghidul de publicare */
+:root{
+  --bg:#F4F6F8; --surface:#FFFFFF; --ink:#16283C; --muted:#5A6A7B; --line:#D7DFE7;
+  --navy:#1F3B57; --on-navy:#FFFFFF; --accent:#E07A2C; --accent-soft:#FBEBDD;
+  --teal:#1A7F6C; --teal-soft:#E5F3EF; --warn:#A8501A; --warn-soft:#FBEDE3; --danger:#B3261E;
+  --f-display:"Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1822; --surface:#15212D; --ink:#E4ECF3; --muted:#9AABBC; --line:#283849;
+  --navy:#A9CBEA; --on-navy:#0E1822; --accent:#F0974E; --accent-soft:#3A2617;
+  --teal:#56C7AD; --teal-soft:#14302B; --warn:#F0A46E; --warn-soft:#3A2617; --danger:#F2867E; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0E1822; --surface:#15212D; --ink:#E4ECF3; --muted:#9AABBC; --line:#283849;
+  --navy:#A9CBEA; --on-navy:#0E1822; --accent:#F0974E; --accent-soft:#3A2617;
+  --teal:#56C7AD; --teal-soft:#14302B; --warn:#F0A46E; --warn-soft:#3A2617; --danger:#F2867E; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+#app{max-width:1080px;margin:0 auto;padding-inline:20px;padding-block:28px 64px;display:grid;gap:44px}
+h1,h2,h3{font-family:var(--f-display);color:var(--navy);margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:clamp(30px,5vw,46px);font-weight:800;letter-spacing:-.01em}
+h2{font-size:26px;font-weight:800}
+h3{font-size:19px;font-weight:600}
+p{margin:0}
+a{color:var(--teal)}
+.eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono);font-size:13.5px}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+/* butoane */
+.btn{appearance:none;border:1.5px solid var(--navy);background:transparent;color:var(--navy);padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;line-height:1.2}
+.btn:hover{background:var(--teal-soft)}
+.btn.primary{background:var(--navy);color:var(--on-navy)}
+.btn.primary:hover{filter:brightness(1.12);background:var(--navy)}
+.btn.small{padding:5px 11px;font-size:14px}
+.btn.ghost{border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink);background:transparent;text-decoration:underline}
+.btn.danger{border-color:var(--danger);color:var(--danger)}
+.btn.danger:hover{background:var(--warn-soft)}
+.btn[disabled]{opacity:.5;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+/* antet */
+header.top{display:grid;gap:14px;padding-bottom:26px;border-bottom:3px solid var(--navy)}
+header.top .lead{max-width:68ch;font-size:17.5px;color:var(--muted)}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.tab{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 16px;cursor:pointer;font-weight:600;color:var(--muted)}
+.tab[aria-selected="true"]{border-color:var(--navy);background:var(--navy);color:var(--on-navy)}
+.tab .yr{font-weight:400;opacity:.8;margin-left:6px;font-size:14px}
+
+.teacherbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;background:var(--accent-soft);border:1.5px dashed var(--accent);border-radius:10px;padding:12px 16px;font-size:15px}
+.teacherbar b{color:var(--warn)}
+.status{font-size:14px;color:var(--muted)}
+.status.err{color:var(--danger);font-weight:600}
+
+section{display:grid;gap:18px}
+.sechead{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.sechead p{max-width:62ch}
+
+/* traseul */
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:0;counter-reset:s}
+.step{position:relative;min-width:0}
+.step button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:4px;width:100%;padding:14px 14px 16px 0}
+.step .dot{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:17px;background:var(--surface);border:2.5px solid var(--navy);color:var(--navy);position:relative;z-index:1}
+.step:not(:last-child)::after{content:"";position:absolute;top:33px;left:38px;right:0;height:2.5px;background:var(--line)}
+.step .fisa{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-top:6px}
+.step .t{font-weight:700;line-height:1.25;padding-right:8px}
+.step .n{font-size:13.5px;color:var(--muted)}
+.step[aria-current="true"] .dot{background:var(--navy);color:var(--on-navy)}
+.step button:hover .t{text-decoration:underline}
+.step button:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+@media (max-width:620px){
+  .steps{grid-template-columns:1fr}
+  .step button{grid-template-columns:38px 1fr;column-gap:14px;padding:8px 0}
+  .step button > :not(.dot){grid-column:2}
+  .step .dot{grid-row:1 / span 3}
+  .step .fisa{margin-top:0}
+  .step:not(:last-child)::after{top:46px;left:18px;right:auto;width:2.5px;height:calc(100% - 38px)}
+}
+.stagecard{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:10px;padding:20px 22px;display:grid;gap:12px}
+.stagecard{gap:16px}
+.stagecard h4{margin:0 0 8px;font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--navy)}
+.stagecard .todo p{max-width:72ch}
+.stagecard .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px 28px;padding-top:14px;border-top:1px solid var(--line)}
+.stagecard .cols > div{min-width:0}
+.stagecard ul{margin:0;padding-left:0;list-style:none;display:grid;gap:10px}
+.stagecard ul.checks li{display:grid;grid-template-columns:22px 1fr;gap:6px}
+.stagecard ul.checks li::before{content:"☐";color:var(--navy);font-weight:700}
+.stagecard ul.files li{display:grid;gap:3px}
+.stagecard .chips{display:flex;flex-wrap:wrap;gap:6px}
+.stagecard .chips code{font-size:13.5px;font-weight:600;padding:2px 8px;border:1px solid var(--line)}
+.stagecard .what{color:var(--muted);font-size:15px}
+
+/* galeria */
+.summary{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:15px;color:var(--muted)}
+.summary b{color:var(--ink);font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;display:grid;gap:10px;align-content:start;min-width:0}
+.card .name{font-weight:700;font-size:17px}
+.card .tema{color:var(--muted);font-size:15px;margin-top:-6px}
+.bar{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px}
+.bar i{height:7px;border-radius:4px;background:var(--line)}
+.bar i.on{background:var(--teal)}
+.prog{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.link{display:flex;align-items:center;gap:8px;min-width:0}
+.link a{font-family:var(--f-mono);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.pill{display:inline-block;font-size:12.5px;font-weight:700;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--teal-soft);color:var(--teal)}
+.pill.no{background:var(--warn-soft);color:var(--warn)}
+.open{font-weight:700;text-decoration:none}
+.open:hover{text-decoration:underline}
+.empty{border:2px dashed var(--line);border-radius:12px;padding:28px 24px;display:grid;gap:10px;justify-items:start;color:var(--muted)}
+.empty h3{color:var(--ink)}
+
+/* formulare */
+.form{background:var(--surface);border:1.5px solid var(--navy);border-radius:10px;padding:18px 20px;display:grid;gap:14px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
+label.f{display:grid;gap:4px;font-weight:600;font-size:14.5px;min-width:0}
+label.f span.h{font-weight:400;color:var(--muted);font-size:13px}
+input[type=text],input[type=url],textarea,select{width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:7px;background:var(--bg)}
+input:focus,textarea:focus,select:focus{border-color:var(--navy);outline:none}
+textarea{min-height:90px;resize:vertical}
+.wide{grid-column:1 / -1}
+.check{font-size:14px;padding:8px 12px;border-radius:8px}
+.check.ok{background:var(--teal-soft);color:var(--teal)}
+.check.warn{background:var(--warn-soft);color:var(--warn)}
+.confirm{background:var(--warn-soft);border-radius:8px;padding:10px 12px;display:grid;gap:8px;font-size:14.5px}
+
+/* ghid */
+.guide{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:22px;align-items:start}
+@media (max-width:820px){.guide{grid-template-columns:1fr}}
+.about{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:18px 32px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.about > div{display:grid;gap:10px;align-content:start;min-width:0}
+.about p{max-width:68ch}
+.uses{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.uses li{padding-left:14px;border-left:3px solid var(--teal-soft)}
+.uses b{color:var(--navy)}
+.howto{list-style:none;margin:0;padding:0;display:grid;gap:12px;counter-reset:h}
+.howto li{counter-increment:h;display:grid;grid-template-columns:30px 1fr;gap:10px}
+.howto li::before{content:counter(h);width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--warn);font-weight:800;display:grid;place-items:center;font-size:14px}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--teal-soft);color:var(--ink);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+.msg{font-family:var(--f-mono);font-size:13.5px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+footer{font-size:13.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+@media (prefers-reduced-motion: no-preference){ .card,.stagecard{transition:border-color .15s} }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<!-- Copie de rezervă a datelor. Pagina folosește fișierul date.json; aceasta se vede doar dacă date.json lipsește. -->
+<script type="application/json" id="date">{"proiect": {"titlu": "Atelier de aplicații cu AI", "descriere": "Construim, pas cu pas, o aplicație web educativă pentru elevii mai mici, lucrând împreună cu un asistent AI: noi gândim, testăm și înțelegem codul, AI-ul ne ajută să mergem mai repede. La final, fiecare aplicație este publicată pe GitHub Pages și apare mai jos."}, "etape": [{"fisa": "Fișa de lucru 1", "titlu": "Ideea aplicației și primul prompt", "descriere": "Alegi tema aplicației tale: un quiz educativ pentru elevii mai mici, pe un subiect pe care îl stăpânești bine (matematică, științe, geografie, limbi străine). Stabilești pentru ce clasă este aplicația și ce trebuie să învețe cei care o folosesc. Scrii primul prompt către AI ca să-ți organizezi ideile și analizezi critic răspunsul: ce păstrezi, ce schimbi și de ce. Pornești jurnalul AI, în care vei nota la fiecare oră ce ai cerut, ce ai primit și ce ai folosit.", "fisiere": ["Fișa de lucru 1 — completată: tema, publicul și ideile pentru întrebări"], "continut": ["Tema aplicației și clasa căreia i se adresează", "Primul prompt trimis, cu răspunsul analizat", "Prima intrare în jurnalul AI"]}, {"fisa": "Fișa de lucru 2", "titlu": "Structura paginii (HTML)", "descriere": "Creezi folderul proiectului și fișierul index.html, apoi construiești scheletul aplicației: titlul, o scurtă prezentare, butonul START, zona în care apare scorul și zona în care vor apărea întrebările. Folosești AI-ul ca să înțelegi etichetele HTML, nu ca să copiezi o pagină gata făcută: fiecare element din cod trebuie să-l poți explica.", "fisiere": ["index.html — structura paginii, cu \u003cmeta charset=\"utf-8\"> ca diacriticele să apară corect", "Fișa de lucru 2 — completată"], "continut": ["Elementele cu id-urile start (butonul), scor și continut", "Al doilea prompt trimis, cu răspunsul analizat", "Intrarea din jurnalul AI"]}, {"fisa": "Fișa de lucru 3", "titlu": "Aspectul paginii (CSS)", "descriere": "Creezi fișierul style.css și îl legi de index.html. Alegi o culoare principală, un font ușor de citit pentru copii și o spațiere aerisită, apoi stilizezi titlul, butonul START și zona de scor. Ceri AI-ului mai multe variante de design și o alegi pe cea potrivită publicului tău, cu argumente.", "fisiere": ["style.css — stilurile aplicației: culori, fonturi, butoane, spațiere", "index.html — actualizat cu \u003clink rel=\"stylesheet\" href=\"style.css\">", "Fișa de lucru 3 — completată"], "continut": ["Culoarea principală și fontul alese, cu motivul alegerii", "Al treilea prompt trimis, cu răspunsul analizat", "Intrarea din jurnalul AI"]}, {"fisa": "Fișa de lucru 4", "titlu": "Prima funcționalitate (JavaScript)", "descriere": "Faci pagina interactivă: butonul START pornește jocul, întrebarea apare cu 3 variante de răspuns, iar scorul și mesajul de feedback se schimbă după fiecare răspuns. Testezi aplicația, găsești un bug, îl descrii singur și îl corectezi apoi împreună cu AI-ul. La final, adaugi restul întrebărilor și obții quizul complet.", "fisiere": ["script.js — logica quizului: întrebările, verificarea răspunsurilor, scorul și mesajele", "index.html — actualizat cu \u003cscript src=\"script.js\"> și zonele intrebare, raspunsuri, mesaj", "style.css — actualizat cu stilul butoanelor de răspuns", "Fișa de lucru 4 — completată: explicațiile codului, testele și tabelul de debugging"], "continut": ["Quizul complet: toate întrebările afișate pe rând, cu scorul final", "Bugul din testul 3 găsit, explicat și corectat", "Prompturile 4 și 5 trimise, cu răspunsurile analizate", "Intrarea din jurnalul AI"]}, {"fisa": "Publicare", "titlu": "Aplicația pe GitHub Pages", "descriere": "Pui aplicația pe internet, ca oricine să o poată folosi. Îți faci cont pe GitHub sau te conectezi cu contul primit de la școală. Creezi un repository public, încarci fișierele proiectului, activezi GitHub Pages și verifici că aplicația funcționează la adresa publică, inclusiv de pe telefon. Apoi trimiți linkul, ca aplicația ta să apară în galeria clasei.", "fisiere": ["index.html, style.css, script.js — versiunile finale, încărcate direct în rădăcina repository-ului"], "continut": ["Cont GitHub activ, cu adresa de e-mail confirmată", "Linkul paginii publicate (…github.io), deschis și testat", "Linkul repository-ului", "Mesajul cu linkurile, trimis profesorului din formularul de mai jos"]}], "clase": [{"id": "11c", "nume": "11C", "an": "2026–2027", "elevi": []}]}</script>
+<script id="page-js">
+(function(){
+"use strict";
+var TITLE = "Atelier de aplicații cu AI";
+var FONTS = 'https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap';
+var RESET = "";
+try { var hs = document.head && document.head.querySelector("style"); RESET = hs ? hs.textContent : ""; } catch (e) {}
+var CSS = document.getElementById("page-css").textContent;
+var JS = document.getElementById("page-js").textContent;
+
+var S = JSON.parse(document.getElementById("date").textContent);
+if (!S.etape) S.etape = [];
+if (!S.clase) S.clase = [];
+
+var ui = { clasa: null, etapa: 0, edit: null, del: null, status: "", err: false,
+           f: { nume: "", tema: "", url: "", repo: "" } };
+try { ui.clasa = localStorage.getItem("clasa-activa"); } catch (e) {}
+var canWrite = false, art = null, saving = false, mode = "view";
+
+function uid(){ return Math.random().toString(36).slice(2, 9); }
+function h(tag, props){
+  var el = document.createElement(tag), kids = Array.prototype.slice.call(arguments, 2);
+  props = props || {};
+  Object.keys(props).forEach(function(k){
+    var v = props[k];
+    if (v == null || v === false) return;
+    if (k === "class") el.className = v;
+    else if (k === "text") el.textContent = v;
+    else if (k.slice(0,2) === "on") el.addEventListener(k.slice(2), v);
+    else if (k === "value") el.value = v;
+    else el.setAttribute(k, v === true ? "" : v);
+  });
+  (function add(list){ list.forEach(function(c){
+    if (c == null || c === false) return;
+    if (Array.isArray(c)) add(c); else el.append(c.nodeType ? c : document.createTextNode(String(c)));
+  }); })(kids);
+  return el;
+}
+function safeHref(u){ try { var x = new URL(u); return (x.protocol === "https:" || x.protocol === "http:") ? x.href : null; } catch (e) { return null; } }
+function checkPages(u){
+  u = (u || "").trim();
+  if (!u) return null;
+  var x; try { x = new URL(u); } catch (e) { return { ok:false, t:"Nu este un link complet. Trebuie să înceapă cu https://" }; }
+  var host = x.hostname.toLowerCase();
+  if (host === "github.com") return { ok:false, t:"Acesta e linkul repository-ului (codul). Linkul paginii publicate arată așa: https://utilizator.github.io/nume-repo/" };
+  if (/\.github\.io$/.test(host)) {
+    if (x.protocol !== "https:") return { ok:false, t:"Folosește varianta cu https://" };
+    return { ok:true, t:"Arată ca un link GitHub Pages corect. Deschide-l o dată să verifici că pagina se încarcă." };
+  }
+  return { ok:false, t:"Nu pare un link GitHub Pages (…github.io). Verifică în repository: Settings → Pages." };
+}
+function klass(){ var c = S.clase.find(function(c){ return c.id === ui.clasa; }); return c || S.clase[0] || null; }
+function setStatus(t, err){ ui.status = t; ui.err = !!err; var s = document.getElementById("st"); if (s){ s.textContent = t; s.className = "status" + (err ? " err" : ""); } }
+
+/* ---------- salvare: pagina își publică singură noua versiune ---------- */
+function buildDoc(state){
+  var json = JSON.stringify(state).replace(/</g, "\\u003c");
+  return '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>' + RESET + '</style></head><body>'
+    + '<title>' + TITLE + '</title>\n'
+    + '<link rel="stylesheet" href="' + FONTS + '">\n'
+    + '<style id="page-css">' + CSS + '</style>\n'
+    + '<div id="app"></div>\n'
+    + '<script type="application/json" id="date">' + json + '</scr' + 'ipt>\n'
+    + '<script id="page-js">' + JS + '</scr' + 'ipt>\n'
+    + '</body></html>';
+}
+var DRAFT = "atelier-ai-ciorna";
+function dataText(){ return JSON.stringify(S, null, 2); }
+function commit(mut){
+  if (!canWrite || saving) return;
+  var next = JSON.parse(JSON.stringify(S));
+  mut(next);
+  S = next; ui.edit = null; ui.del = null;
+  if (mode === "local") {
+    try { localStorage.setItem(DRAFT, JSON.stringify(S)); } catch (e) {}
+    ui.dirty = true;
+    render();
+    setStatus("Modificare păstrată în acest browser. Când termini, copiază datele în date.json pe GitHub.");
+    return;
+  }
+  render();
+  saving = true; setStatus("Se salvează…");
+  art.publish(buildDoc(S)).then(function(){
+    saving = false; setStatus("Salvat. Toți cei care deschid pagina văd versiunea nouă.");
+  }, function(e){
+    saving = false;
+    var c = e && e.code;
+    if (c === "conflict") setStatus("Altcineva a salvat în același timp. Pagina s-a reîncărcat; refă ultima modificare.", true);
+    else if (c === "not_writer" || c === "not_granted") { canWrite = false; render(); setStatus("Nu ai drept de editare pe această pagină.", true); }
+    else setStatus("Nu s-a putut salva (" + (c || "eroare") + "). Încearcă din nou.", true);
+  });
+}
+
+/* ---------- componente ---------- */
+function field(label, id, val, opts){
+  opts = opts || {};
+  var input = opts.area ? h("textarea", { id:id }) : h("input", { id:id, type: opts.type || "text", placeholder: opts.ph, autocomplete:"off" });
+  input.value = val || "";
+  if (opts.oninput) input.addEventListener("input", opts.oninput);
+  return h("label", { class: "f" + (opts.wide ? " wide" : ""), for:id }, label, opts.help ? h("span", { class:"h", text: opts.help }) : null, input);
+}
+function val(id){ var e = document.getElementById(id); return e ? e.value.trim() : ""; }
+
+function Header(){
+  var c = klass();
+  var tabs = S.clase.map(function(k){
+    return h("button", { class:"tab", role:"tab", "aria-selected": String(c && k.id === c.id),
+      onclick:function(){ ui.clasa = k.id; ui.edit = null; try{ localStorage.setItem("clasa-activa", k.id); }catch(e){} render(); } },
+      "Clasa " + k.nume, k.an ? h("span", { class:"yr", text:k.an }) : null);
+  });
+  if (canWrite) tabs.push(h("button", { class:"btn small ghost", onclick:function(){ ui.edit = "clasa:new"; render(); } }, "+ Clasă nouă"));
+  var editP = ui.edit === "proiect";
+  return h("header", { class:"top" },
+    h("div", { class:"eyebrow" }, "Informatică · clasa a XI-a · proiect"),
+    editP ? h("div", { class:"form" },
+      h("div", { class:"fields" },
+        field("Numele proiectului", "p-t", S.proiect.titlu, { wide:true }),
+        field("Descriere", "p-d", S.proiect.descriere, { area:true, wide:true })),
+      h("div", { class:"row" },
+        h("button", { class:"btn primary", onclick:function(){ var t = val("p-t"), d = val("p-d"); if (!t) return; commit(function(s){ s.proiect.titlu = t; s.proiect.descriere = d; }); } }, "Salvează"),
+        h("button", { class:"btn ghost", onclick:function(){ ui.edit = null; render(); } }, "Renunță")))
+    : [ h("h1", { text: S.proiect.titlu }), h("p", { class:"lead", text: S.proiect.descriere }) ],
+    S.clase.length || canWrite ? h("div", { class:"tabs", role:"tablist", "aria-label":"Clase" }, tabs) : null,
+    ui.edit && ui.edit.indexOf("clasa:") === 0 ? ClassForm() : null);
+}
+function ClassForm(){
+  var isNew = ui.edit === "clasa:new", c = isNew ? { nume:"", an:"" } : klass();
+  return h("div", { class:"form" },
+    h("h3", { text: isNew ? "Clasă nouă" : "Editează clasa" }),
+    h("div", { class:"fields" },
+      field("Clasa", "c-n", c.nume, { ph:"ex: 11C" }),
+      field("An școlar", "c-a", c.an, { ph:"ex: 2026–2027" })),
+    h("div", { class:"row" },
+      h("button", { class:"btn primary", onclick:function(){
+        var n = val("c-n"), a = val("c-a"); if (!n) return;
+        if (isNew) { var id = uid(); ui.clasa = id; commit(function(s){ s.clase.push({ id:id, nume:n, an:a, elevi:[] }); }); }
+        else commit(function(s){ var k = s.clase.find(function(x){ return x.id === c.id; }); k.nume = n; k.an = a; });
+      } }, isNew ? "Adaugă clasa" : "Salvează"),
+      h("button", { class:"btn ghost", onclick:function(){ ui.edit = null; render(); } }, "Renunță")));
+}
+
+function TeacherBar(){
+  if (!canWrite) return null;
+  var c = klass();
+  var local = mode === "local";
+  return h("div", { class:"teacherbar" },
+    h("div", null, h("b", null, local ? "Mod profesor (local). " : "Mod profesor. "),
+      local ? "Modificările rămân doar în acest browser până când copiezi datele și le lipești în fișierul date.json din repository. "
+            : "Ce modifici aici se salvează pentru toți cei care deschid pagina. ",
+      h("span", { id:"st", class:"status" + (ui.err ? " err" : ""), text: ui.status })),
+    h("div", { class:"row", "data-copy":"" },
+      local ? h("button", { class:"btn small primary", onclick:function(ev){ copyText(dataText(), ev.currentTarget); } }, ui.dirty ? "Copiază datele (date.json) •" : "Copiază datele (date.json)") : null,
+      local && ui.dirty ? h("button", { class:"btn small ghost", onclick:function(){ try { localStorage.removeItem(DRAFT); } catch (e) {} location.reload(); } }, "Renunță la modificări") : null,
+      local ? h("pre", { class:"msg", hidden:true, style:"flex-basis:100%;max-height:220px;overflow:auto;margin:0", text: dataText() }) : null,
+      h("button", { class:"btn small", onclick:function(){ ui.edit = "proiect"; render(); } }, "Editează proiectul"),
+      c ? h("button", { class:"btn small", onclick:function(){ ui.edit = "clasa:" + c.id; render(); } }, "Editează clasa " + c.nume) : null));
+}
+
+function Stages(){
+  var c = klass(), elevi = c ? c.elevi : [];
+  var items = S.etape.map(function(e, i){
+    var n = elevi.filter(function(x){ return (x.etapa || 0) >= i + 1; }).length;
+    return h("li", { class:"step", "aria-current": String(ui.etapa === i) },
+      h("button", { onclick:function(){ ui.etapa = i; if (ui.edit && ui.edit.indexOf("etapa:") === 0) ui.edit = null; render(); }, "aria-label":"Etapa " + (i+1) + ": " + e.titlu },
+        h("span", { class:"dot", text: String(i + 1) }),
+        e.fisa ? h("span", { class:"fisa", text: e.fisa }) : null,
+        h("span", { class:"t", text: e.titlu }),
+        c && elevi.length ? h("span", { class:"n", text: n + " din " + elevi.length + " au terminat" }) : null));
+  });
+  var body;
+  if (!S.etape.length) {
+    body = h("div", { class:"empty" }, h("h3", { text:"Traseul nu are încă etape" }),
+      h("p", null, canWrite ? "Adaugă prima etapă: o fișă de lucru, cu ce trebuie predat la final." : "Profesorul va adăuga aici etapele proiectului."),
+      canWrite ? h("button", { class:"btn primary", onclick:function(){ ui.edit = "etapa:new"; render(); } }, "Adaugă o etapă") : null);
+  }
+  var cur = S.etape[Math.min(ui.etapa, S.etape.length - 1)];
+  var detail = null;
+  if (ui.edit === "etapa:new" || (ui.edit === "etapa:" + ui.etapa && cur)) detail = StageForm(ui.edit === "etapa:new" ? null : ui.etapa);
+  else if (cur) detail = h("article", { class:"stagecard" },
+      h("div", { class:"eyebrow", text: "Etapa " + (ui.etapa + 1) + (cur.fisa ? " · " + cur.fisa : "") }),
+      h("h3", { text: cur.titlu }),
+      descOf(cur) ? h("div", { class:"todo" }, h("h4", null, "Ce ai de făcut"), h("p", { text: descOf(cur) })) : null,
+      (cur.fisiere && cur.fisiere.length) || altOf(cur).length ? h("div", { class:"cols" },
+        cur.fisiere && cur.fisiere.length ? h("div", null, h("h4", null, "Fișiere de predat"),
+          h("ul", { class:"files" }, cur.fisiere.map(FileLine))) : null,
+        altOf(cur).length ? h("div", null, h("h4", null, "Ce mai predai"),
+          h("ul", { class:"checks" }, altOf(cur).map(function(l){ return h("li", { text:l }); }))) : null) : null,
+      canWrite ? h("div", { class:"row" },
+        h("button", { class:"btn small", onclick:function(){ ui.edit = "etapa:" + ui.etapa; render(); } }, "Editează etapa"),
+        h("button", { class:"btn small ghost", onclick:function(){ ui.edit = "etapa:new"; render(); } }, "+ Etapă nouă")) : null);
+  return h("section", { id:"parcurs", "aria-labelledby":"h-parcurs" },
+    h("div", { class:"sechead" }, h("div", null, h("div", { class:"eyebrow" }, "Parcursul"), h("h2", { id:"h-parcurs" }, "Etapele proiectului")),
+      h("p", { class:"muted" }, "Fiecare etapă corespunde unei fișe de lucru. Apasă pe o etapă ca să vezi ce ai de făcut și ce predai.")),
+    S.etape.length ? h("ol", { class:"steps" }, items) : null,
+    body, detail);
+}
+function descOf(e){ return e.descriere || e.rezumat || ""; }
+function altOf(e){ return e.continut || e.livrabile || []; }
+function FileLine(line){
+  var k = line.indexOf(" — "), names = k >= 0 ? line.slice(0, k) : line, what = k >= 0 ? line.slice(k + 3) : "";
+  var chips = names.split(",").map(function(n){ return n.trim(); }).filter(Boolean);
+  var looksFile = chips.every(function(n){ return /^[\w.\-\/ ]+\.[a-z0-9]{1,5}$/i.test(n); });
+  return h("li", null,
+    looksFile ? h("span", { class:"chips" }, chips.map(function(n){ return h("code", { text:n }); })) : h("b", { text:names }),
+    what ? h("span", { class:"what", text: what }) : null);
+}
+function StageForm(i){
+  var e = i == null ? { fisa:"", titlu:"", descriere:"", fisiere:[], continut:[] } : S.etape[i];
+  var delKey = "etapa:" + i;
+  return h("div", { class:"form" },
+    h("h3", { text: i == null ? "Etapă nouă" : "Editează etapa " + (i + 1) }),
+    h("div", { class:"fields" },
+      field("Fișa", "e-f", e.fisa, { ph:"ex: Fișa de lucru 5" }),
+      field("Titlul etapei", "e-t", e.titlu),
+      field("Ce are de făcut elevul", "e-r", descOf(e), { area:true, wide:true }),
+      field("Fișiere de predat", "e-fi", (e.fisiere || []).join("\n"), { area:true, wide:true, help:"câte un rând: nume fișier — ce trebuie să conțină (ex: index.html — structura paginii)" }),
+      field("Ce mai predă (conținut, prompturi, jurnal)", "e-l", altOf(e).join("\n"), { area:true, wide:true, help:"câte un rând pentru fiecare lucru predat" })),
+    ui.del === delKey ? h("div", { class:"confirm" }, "Ștergi etapa „" + e.titlu + "”? Progresul elevilor se calculează pe numărul etapei, deci verifică după ștergere.",
+      h("div", { class:"row" },
+        h("button", { class:"btn small danger", onclick:function(){ ui.etapa = 0; commit(function(s){ s.etape.splice(i, 1); }); } }, "Da, șterge"),
+        h("button", { class:"btn small ghost", onclick:function(){ ui.del = null; render(); } }, "Nu"))) : null,
+    h("div", { class:"row" },
+      h("button", { class:"btn primary", onclick:function(){
+        var lines = function(id){ return val(id).split("\n").map(function(x){ return x.trim(); }).filter(Boolean); };
+        var ne = { fisa: val("e-f"), titlu: val("e-t"), descriere: val("e-r"), fisiere: lines("e-fi"), continut: lines("e-l") };
+        if (!ne.titlu) return;
+        if (i == null) { ui.etapa = S.etape.length; commit(function(s){ s.etape.push(ne); }); }
+        else commit(function(s){ s.etape[i] = ne; });
+      } }, "Salvează"),
+      h("button", { class:"btn ghost", onclick:function(){ ui.edit = null; ui.del = null; render(); } }, "Renunță"),
+      i != null ? h("button", { class:"btn small danger", style:"margin-left:auto", onclick:function(){ ui.del = delKey; render(); } }, "Șterge etapa") : null));
+}
+
+function Bar(n){
+  var total = S.etape.length;
+  if (!total) return null;
+  var segs = []; for (var i = 0; i < total; i++) segs.push(h("i", { class: i < n ? "on" : "" }));
+  return h("div", null, h("div", { class:"bar", "aria-hidden":"true" }, segs),
+    h("div", { class:"prog", text: n >= total ? "Toate etapele terminate" : n ? "Etapa " + n + " din " + total + " terminată" : "Nicio etapă terminată încă" }));
+}
+function StudentCard(e){
+  if (ui.edit === "elev:" + e.id) return StudentForm(e);
+  var href = safeHref(e.url), repo = safeHref(e.repo);
+  return h("article", { class:"card" },
+    h("div", { class:"row", style:"justify-content:space-between;align-items:baseline" },
+      h("div", { class:"name", text: e.nume }),
+      h("span", { class:"pill " + (href ? "ok" : "no"), text: href ? "publicată" : "nepublicată" })),
+    e.tema ? h("div", { class:"tema", text: e.tema }) : null,
+    Bar(e.etapa || 0),
+    href ? h("div", { class:"link" }, h("a", { class:"open", href:href, target:"_blank", rel:"noopener noreferrer" }, "Deschide aplicația ↗")) : null,
+    href ? h("div", { class:"link" }, h("a", { href:href, target:"_blank", rel:"noopener noreferrer", text: e.url.replace(/^https?:\/\//, ""), title: e.url })) : null,
+    repo ? h("div", { class:"link" }, h("span", { class:"muted", style:"font-size:13px" }, "cod:"), h("a", { href:repo, target:"_blank", rel:"noopener noreferrer", text: e.repo.replace(/^https?:\/\/(www\.)?/, ""), title:e.repo })) : null,
+    canWrite ? (ui.del === "elev:" + e.id
+      ? h("div", { class:"confirm" }, "Ștergi „" + e.nume + "” din listă?",
+          h("div", { class:"row" },
+            h("button", { class:"btn small danger", onclick:function(){ commit(function(s){ var k = s.clase.find(function(x){ return x.id === klass().id; }); k.elevi = k.elevi.filter(function(x){ return x.id !== e.id; }); }); } }, "Da, șterge"),
+            h("button", { class:"btn small ghost", onclick:function(){ ui.del = null; render(); } }, "Nu")))
+      : h("div", { class:"row" },
+          h("button", { class:"btn small", onclick:function(){ ui.edit = "elev:" + e.id; ui.del = null; render(); } }, "Editează"),
+          h("button", { class:"btn small ghost", onclick:function(){ ui.del = "elev:" + e.id; render(); } }, "Șterge"))) : null);
+}
+function StudentForm(e, prefill){
+  var isNew = !e; e = e || Object.assign({ nume:"", tema:"", url:"", repo:"", etapa:0 }, prefill || {});
+  var sel = h("select", { id:"s-e" }, [h("option", { value:"0", text:"Nicio etapă terminată" })].concat(S.etape.map(function(x, i){
+    return h("option", { value: String(i + 1), text: (i + 1) + " · " + (x.fisa ? x.fisa + " — " : "") + x.titlu });
+  })));
+  sel.value = String(Math.min(e.etapa || 0, S.etape.length));
+  var chk = h("div", { id:"s-chk" });
+  function upd(){ var r = checkPages(val("s-u")); chk.className = r ? "check " + (r.ok ? "ok" : "warn") : ""; chk.textContent = r ? r.t : ""; }
+  var form = h("div", { class:"form" + (isNew ? " wide" : "") , style: isNew ? "grid-column:1 / -1" : null },
+    h("h3", { text: isNew ? "Adaugă un elev" : "Editează" }),
+    h("div", { class:"fields" },
+      field("Numele elevului", "s-n", e.nume),
+      field("Tema aplicației", "s-t", e.tema, { ph:"ex: Sistemul Solar" }),
+      field("Link pagină (GitHub Pages)", "s-u", e.url, { type:"url", ph:"https://utilizator.github.io/proiect/", oninput:upd }),
+      field("Link repository (opțional)", "s-r", e.repo, { type:"url", ph:"https://github.com/utilizator/proiect" }),
+      h("label", { class:"f wide", for:"s-e" }, "Ultima etapă terminată", sel)),
+    chk,
+    h("div", { class:"row" },
+      h("button", { class:"btn primary", onclick:function(){
+        var ne = { nume: val("s-n"), tema: val("s-t"), url: val("s-u"), repo: val("s-r"), etapa: Number(sel.value) || 0 };
+        if (!ne.nume) { document.getElementById("s-n").focus(); return; }
+        var cid = klass().id;
+        if (isNew) commit(function(s){ ne.id = uid(); s.clase.find(function(x){ return x.id === cid; }).elevi.push(ne); });
+        else commit(function(s){ var k = s.clase.find(function(x){ return x.id === cid; }); var i = k.elevi.findIndex(function(x){ return x.id === e.id; }); ne.id = e.id; k.elevi[i] = ne; });
+      } }, isNew ? "Adaugă în listă" : "Salvează"),
+      h("button", { class:"btn ghost", onclick:function(){ ui.edit = null; render(); } }, "Renunță")));
+  setTimeout(upd, 0);
+  return form;
+}
+function copyText(text, btn){
+  var done = function(){ var o = btn.textContent; btn.textContent = "Copiat ✓"; setTimeout(function(){ btn.textContent = o; }, 1600); };
+  try {
+    navigator.clipboard.writeText(text).then(done, function(){ selectFallback(text, btn); });
+  } catch (e) { selectFallback(text, btn); }
+}
+function selectFallback(text, btn){
+  var pre = btn.closest("[data-copy]") && btn.closest("[data-copy]").querySelector(".msg");
+  if (pre) { pre.hidden = false; var r = document.createRange(); r.selectNodeContents(pre); var s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = "Selectat: apasă Ctrl+C"; }
+}
+
+function Gallery(){
+  var c = klass();
+  if (!c) {
+    return h("section", { id:"aplicatii" },
+      h("div", { class:"sechead" }, h("div", null, h("div", { class:"eyebrow" }, "Galeria"), h("h2", null, "Aplicațiile elevilor"))),
+      h("div", { class:"empty" }, h("h3", { text:"Nu există încă nicio clasă" }),
+        h("p", null, canWrite ? "Adaugă clasa cu care lucrezi; poți adăuga oricând alte clase, pentru că etapele rămân aceleași." : "Profesorul va adăuga aici clasa și aplicațiile publicate."),
+        canWrite ? h("button", { class:"btn primary", onclick:function(){ ui.edit = "clasa:new"; render(); } }, "Adaugă o clasă") : null));
+  }
+  var el = c.elevi.slice().sort(function(a, b){ return a.nume.localeCompare(b.nume, "ro"); });
+  var pub = el.filter(function(x){ return safeHref(x.url); }).length;
+  var done = el.filter(function(x){ return S.etape.length && (x.etapa || 0) >= S.etape.length; }).length;
+  var cards = el.map(StudentCard);
+  if (ui.edit === "elev:new") cards.unshift(StudentForm(null, ui.prefill));
+  var links = el.filter(function(x){ return safeHref(x.url); }).map(function(x){ return x.nume + (x.tema ? " (" + x.tema + ")" : "") + ": " + x.url; }).join("\n");
+  return h("section", { id:"aplicatii" },
+    h("div", { class:"sechead" },
+      h("div", null, h("div", { class:"eyebrow" }, "Galeria"), h("h2", null, "Aplicațiile clasei " + c.nume)),
+      h("div", { class:"row" },
+        links ? h("button", { class:"btn small", onclick:function(ev){ copyText(links, ev.currentTarget); } }, "Copiază toate linkurile") : null,
+        canWrite ? h("button", { class:"btn small primary", onclick:function(){ ui.edit = "elev:new"; ui.prefill = null; render(); } }, "+ Adaugă elev") : null)),
+    el.length ? h("div", { class:"summary" },
+      h("span", null, h("b", null, String(el.length)), " elevi"),
+      h("span", null, h("b", null, String(pub)), " aplicații publicate"),
+      S.etape.length ? h("span", null, h("b", null, String(done)), " au terminat toate etapele") : null) : null,
+    cards.length ? h("div", { class:"grid" }, cards)
+      : h("div", { class:"empty" }, h("h3", { text:"Încă nu e nicio aplicație în listă" }),
+          h("p", null, "După ce își publică pagina pe GitHub Pages, fiecare elev completează formularul de mai jos și trimite mesajul profesorului. Profesorul adaugă apoi linkul aici."),
+          canWrite ? h("button", { class:"btn primary", onclick:function(){ ui.edit = "elev:new"; render(); } }, "Adaugă primul elev") : null));
+}
+
+function Publish(){
+  var f = ui.f, c = klass();
+  var out = h("div", { class:"msg", id:"g-msg" });
+  var chk = h("div");
+  var copyBtn = h("button", { class:"btn small primary", onclick:function(ev){ copyText(out.textContent, ev.currentTarget); } }, "Copiază mesajul");
+  var addBtn = canWrite && c ? h("button", { class:"btn small", onclick:function(){
+    ui.prefill = { nume: f.nume, tema: f.tema, url: f.url, repo: f.repo, etapa: S.etape.length };
+    ui.edit = "elev:new"; render(); var a = document.getElementById("aplicatii"); if (a) a.scrollIntoView({ block:"start" });
+  } }, "Adaugă direct în listă") : null;
+  function upd(){
+    f.nume = val("g-n"); f.tema = val("g-t"); f.url = val("g-u"); f.repo = val("g-r");
+    var r = checkPages(f.url);
+    chk.className = r ? "check " + (r.ok ? "ok" : "warn") : ""; chk.textContent = r ? r.t : "";
+    out.textContent = "Proiect: " + S.proiect.titlu + (c ? " · clasa " + c.nume : "") + "\n"
+      + "Nume: " + (f.nume || "…") + "\n"
+      + "Tema: " + (f.tema || "…") + "\n"
+      + "Pagina publicată: " + (f.url || "…") + "\n"
+      + "Repository: " + (f.repo || "-");
+  }
+  var form = h("div", { class:"form", "data-copy":"" },
+    h("h3", null, "Trimite linkul profesorului"),
+    h("div", { class:"fields" },
+      field("Numele tău", "g-n", f.nume, { oninput:upd }),
+      field("Tema aplicației", "g-t", f.tema, { oninput:upd }),
+      field("Link pagină (GitHub Pages)", "g-u", f.url, { type:"url", ph:"https://utilizator.github.io/proiect/", oninput:upd, wide:true }),
+      field("Link repository (opțional)", "g-r", f.repo, { type:"url", ph:"https://github.com/utilizator/proiect", oninput:upd, wide:true })),
+    chk, out,
+    h("div", { class:"row" }, copyBtn, addBtn,
+      h("span", { class:"muted", style:"font-size:14px" }, "Lipește mesajul pe canalul clasei sau trimite-l profesorului.")));
+  setTimeout(upd, 0);
+  return h("section", { id:"publicare" },
+    h("div", { class:"sechead" }, h("div", null, h("div", { class:"eyebrow" }, "Ultimul pas"), h("h2", null, "Publică aplicația pe GitHub")),
+      h("p", { class:"muted" }, "Ai nevoie de un cont GitHub. Durează câteva minute și îl folosești și după proiect.")),
+    h("div", { class:"about" },
+      h("div", null,
+        h("h3", null, "Ce este GitHub?"),
+        h("p", null, "GitHub este cea mai folosită platformă pentru păstrarea și publicarea codului. Programatorii, de la elevi la echipele marilor companii, își țin acolo proiectele. Codul unui proiect stă într-un ", h("b", null, "repository"), " (pe scurt, repo): un folder online care păstrează toate fișierele și fiecare versiune a lor."),
+        h("p", null, h("b", null, "Git"), " este programul care ține evidența versiunilor; ", h("b", null, "GitHub"), " este site-ul care găzduiește proiectele și adaugă unelte de lucru în echipă.")),
+      h("div", null,
+        h("h3", null, "Ce poți face cu el"),
+        h("ul", { class:"uses" },
+          h("li", null, h("b", null, "Păstrezi codul în siguranță. "), "Fișierele nu se mai pierd odată cu calculatorul sau stick-ul."),
+          h("li", null, h("b", null, "Vezi istoricul. "), "Fiecare salvare (commit) rămâne, așa că poți reveni la o versiune care mergea."),
+          h("li", null, h("b", null, "Publici site-uri gratuit. "), "Cu GitHub Pages, o pagină HTML devine o adresă pe care o deschide oricine."),
+          h("li", null, h("b", null, "Lucrezi în echipă. "), "Mai mulți colegi pot contribui la același proiect, iar Issues ține evidența problemelor de rezolvat."),
+          h("li", null, h("b", null, "Îți construiești un portofoliu. "), "Profilul tău arată ce ai construit, util la admitere, concursuri sau primul job."),
+          h("li", null, h("b", null, "Primești unelte gratuite. "), "Ca elev, poți cere GitHub Student Developer Pack, cu acces gratuit la unelte pentru programatori.")))),
+    h("div", { class:"guide" },
+      h("div", { style:"display:grid;gap:14px" },
+        h("p", { class:"muted" }, "Pașii, de la cont la link:"),
+        h("ol", { class:"howto" },
+          h("li", null, h("span", null, h("b", null, "Intră în cont. "), "Dacă școala ți-a dat un cont GitHub, conectează-te cu el (", h("b", null, "Sign in"), "). Altfel, fă-ți unul pe ", h("code", null, "github.com"), " (", h("b", null, "Sign up"), "), cu o adresă de e-mail la care ai acces. Alege cu grijă numele de utilizator: apare în adresa aplicației tale, ", h("code", null, "utilizator.github.io"), ". Confirmă adresa de e-mail din mesajul primit.")),
+          h("li", null, h("span", null, "Creează pe GitHub un repository public (ex: ", h("code", null, "quiz-sistem-solar"), ").")),
+          h("li", null, h("span", null, "Încarcă fișierele ", h("code", null, "index.html"), ", ", h("code", null, "style.css"), ", ", h("code", null, "script.js"), " direct în rădăcina repository-ului (nu într-un folder).")),
+          h("li", null, h("span", null, "Mergi la ", h("b", null, "Settings → Pages"), ". La Source alege ", h("b", null, "Deploy from a branch"), ", apoi ramura ", h("code", null, "main"), " și folderul ", h("code", null, "/ (root)"), ". Apasă Save.")),
+          h("li", null, h("span", null, "După 1–2 minute, linkul apare sus pe aceeași pagină: ", h("code", null, "https://utilizator.github.io/quiz-sistem-solar/"), ". Deschide-l și verifică quizul.")),
+          h("li", null, h("span", null, "Completează formularul și trimite mesajul. Linkul tău va apărea în galeria clasei.")))),
+      form));
+}
+
+function render(){
+  var app = document.getElementById("app");
+  var y = window.scrollY, act = document.activeElement && document.activeElement.id;
+  app.replaceChildren.apply(app, [Header(), TeacherBar(), Stages(), Gallery(), Publish(),
+    h("footer", null, "Pagina poate fi refolosită cu alte clase: profesorul adaugă o clasă nouă, iar etapele rămân aceleași. Aplicațiile sunt ale elevilor; linkurile duc către paginile lor de pe GitHub.")].filter(Boolean));
+  if (act) { var e = document.getElementById(act); if (e && e.focus) e.focus({ preventScroll:true }); }
+  window.scrollTo(0, y);
+}
+
+render();
+if (window.claude && typeof window.claude.use === "function") {
+  /* în Claude: pagina se salvează singură */
+  Promise.all([window.claude.use("artifact"), window.claude.use("user")]).then(function(r){
+    art = r[0];
+    var u = r[1];
+    if (!art || !u) return false;
+    return u.canEdit();
+  }).then(function(ok){ if (ok) { canWrite = true; mode = "artifact"; render(); } }, function(){});
+} else {
+  /* pe GitHub Pages: datele vin din date.json; cu #profesor în adresă se poate edita local */
+  var startLocal = function(){
+    if (location.hash !== "#profesor" || mode === "local") return;
+    mode = "local"; canWrite = true;
+    try { var d = localStorage.getItem(DRAFT); if (d) { S = JSON.parse(d); ui.dirty = true; ui.status = "Ai modificări din sesiunea trecută, încă necopiate în date.json."; } } catch (e) {}
+    render();
+  };
+  var loadData = (location.protocol === "http:" || location.protocol === "https:")
+    ? fetch("date.json", { cache:"no-store" }).then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+        if (d && d.etape && d.clase) { S = d; render(); }
+      }, function(){})
+    : Promise.resolve();
+  loadData.then(startLocal);
+  window.addEventListener("hashchange", startLocal);
+}
+})();
+</script>
+</body>
+</html>
